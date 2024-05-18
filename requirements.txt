@@ -4,3 +4,5 @@ Flask
 pandas
 transformers
 faiss-cpu
+pillow
+torch
