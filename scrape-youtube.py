@@ -1,7 +1,9 @@
+import os
 import sys
 from googleapiclient.discovery import build
 from dotenv import load_dotenv
 load_dotenv()
+
 
 def youtube_search(query):
     # Replace with your API key
@@ -15,7 +17,7 @@ def youtube_search(query):
         type='video'
     )
     response = request.execute()
-    
+
     print(len(response['items']))
     from pprint import pprint
     pprint(response)
@@ -23,8 +25,8 @@ def youtube_search(query):
     for item in response['items']:
         print(f"Title: {item['snippet']['title']}")
         print(f"Video ID: {item['id']['videoId']}\n")
-        print(item)
-        
+        print(item['snippet']['description'])
+
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
@@ -32,4 +34,3 @@ if __name__ == "__main__":
         sys.exit(1)
     search_query = sys.argv[1]
     youtube_search(search_query)
-
