@@ -22,10 +22,10 @@ def youtube_search(query):
     from pprint import pprint
     pprint(response)
 
-    for item in response['items']:
-        print(f"Title: {item['snippet']['title']}")
-        print(f"Video ID: {item['id']['videoId']}\n")
-        print(item['snippet']['description'])
+    # for item in response['items']:
+    #     print(f"Title: {item['snippet']['title']}")
+    #     print(f"Video ID: {item['id']['videoId']}\n")
+        # print(item['snippet']['description'])
 
 
 if __name__ == "__main__":
