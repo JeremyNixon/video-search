@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Search Engine</title>
+    <script>
+        function onImageClick(imagePath) {
+            fetch('/similar-images?image_path=' + encodeURIComponent(imagePath))
+                .then(response => response.text())
+                .then(html => {
+                    document.body.innerHTML = html;
+                });
+        }
+    </script>  
+    <style>
+        html { background: black; }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            grid-gap: 2px;
+            grid-auto-rows: minmax(160px, auto);
+            grid-auto-flow: dense;
+        }
+
+        .c-1{ background: #000000; color: #ddd;}
+        .c-2{ background: #4ecdc4;}
+        .c-3{ background: #bfd7ea;}
+        .c-4{ background: #ff6b6b;}
+        .c-5{ background: #ffe66d;}
+
+        .card { min-height: 200px; background-size: contain; background-position: center; background-repeat: no-repeat;}
+        .span-2 { grid-column-end: span 2; grid-row-end: span 2; min-height: 400px; }
+        .span-3 { grid-column-end: span 3; grid-row-end: span 3; min-height: 800px; }
+    </style>
+</head>
+<body>
+    <div class="grid">
+        {% for image in images %}
+            {% set span = weighted_rand({1:0.7, 2:0.2, 3:0.1}) %}
+            {% set url = url_for('static', filename=image) %}
+            {% set card_class = 'card span-' ~ span ~ ' c-1' %}
+            <div style="background-image: url({{ url }})" class="{{ card_class }}" onclick="onImageClick('{{ image }}')"></div>
+        {% endfor %}
+    </div>
+</body>
+</html>

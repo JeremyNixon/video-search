@@ -1,0 +1,6 @@
+gunicorn
+numpy
+Flask
+pandas
+transformers
+faiss-cpu
