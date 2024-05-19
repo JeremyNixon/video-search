@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Search Engine</title>
+    <title>Video Search Engine</title>
     <script>
         function onImageClick(imagePath) {
             fetch('/similar-images?image_path=' + encodeURIComponent(imagePath))
@@ -12,7 +12,66 @@
                     document.body.innerHTML = html;
                 });
         }
-    </script>  
+
+        function onImageRightClick(event, imagePath) {
+            event.preventDefault();
+
+            const filename = imagePath.split('/').pop();
+            const parts = filename.match(/^yt_(.+?)_keyframe_(\d+)_(\d+)\.jpg$/);
+
+            if (parts) {
+                const youtubeId = parts[1];
+                const minutes = parseInt(parts[2], 10);
+                const seconds = parseInt(parts[3], 10);
+                const totalSeconds = seconds;
+
+                const videoIframe = document.createElement('iframe');
+                videoIframe.width = "560";
+                videoIframe.height = "315";
+                videoIframe.src = `https://www.youtube.com/embed/${youtubeId}?start=${totalSeconds}&autoplay=1`;
+                videoIframe.title = "YouTube video player";
+                videoIframe.frameBorder = "0";
+                videoIframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+                videoIframe.allowFullscreen = true;
+                videoIframe.referrerPolicy = "strict-origin-when-cross-origin";
+
+                const modal = document.createElement('div');
+                modal.style.position = "fixed";
+                modal.style.top = "50%";
+                modal.style.left = "50%";
+                modal.style.transform = "translate(-50%, -50%)";
+                modal.style.backgroundColor = "#000";
+                modal.style.padding = "10px";
+                modal.style.zIndex = "1000";
+                modal.appendChild(videoIframe);
+
+                const overlay = document.createElement('div');
+                overlay.style.position = "fixed";
+                overlay.style.top = "0";
+                overlay.style.left = "0";
+                overlay.style.width = "100%";
+                overlay.style.height = "100%";
+                overlay.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
+                overlay.style.zIndex = "999";
+                overlay.onclick = function() {
+                    document.body.removeChild(modal);
+                    document.body.removeChild(overlay);
+                };
+
+                document.body.appendChild(modal);
+                document.body.appendChild(overlay);
+            }
+        }
+
+        function onSearch() {
+            const query = document.getElementById('search-input').value;
+            fetch('/query-search?query=' + encodeURIComponent(query))
+                .then(response => response.text())
+                .then(html => {
+                    document.body.innerHTML = html;
+                });
+        }
+    </script>
     <style>
         html { background: black; }
         .grid {
@@ -35,12 +94,19 @@
     </style>
 </head>
 <body>
+    <div>
+        <input type="text" id="search-input" placeholder="Search images...">
+        <button onclick="onSearch()">Search</button>
+    </div>
     <div class="grid">
         {% for image in images %}
             {% set span = weighted_rand({1:0.7, 2:0.2, 3:0.1}) %}
             {% set url = url_for('static', filename=image) %}
             {% set card_class = 'card span-' ~ span ~ ' c-1' %}
-            <div style="background-image: url({{ url }})" class="{{ card_class }}" onclick="onImageClick('{{ image }}')"></div>
+            <div style="background-image: url({{ url }})" class="{{ card_class }}"
+                 onclick="onImageClick('{{ image }}')"
+                 oncontextmenu="onImageRightClick(event, '{{ image }}')">
+            </div>
         {% endfor %}
     </div>
 </body>

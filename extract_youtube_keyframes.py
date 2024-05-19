@@ -2,7 +2,7 @@ import os
 import subprocess
 import shutil
 import time
-
+import sys
 
 def download_keyframes(video_id, output_folder="keyframes", target_keyframes=60, static_folder="static"):
     start_time = time.time()  # Start timing
@@ -46,7 +46,7 @@ def download_keyframes(video_id, output_folder="keyframes", target_keyframes=60,
     print(f"video duration is {duration} seconds")
 
     # Calculate interval to achieve target keyframes
-    interval = duration // target_keyframes
+    interval = max(1, duration // target_keyframes)
     print(f"Interval between keyframes is {interval} seconds")
 
     # Extract keyframes

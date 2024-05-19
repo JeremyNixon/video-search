@@ -21,11 +21,20 @@ def weighted_rand(spec):
         sum += spec[i]
         if r <= sum: return int(i)
 
+@app.route('/query-search', methods=['GET'])
+def query_search():
+    query = request.args.get('query')
+    query_embedding = embed_text(query)
+    distances, indexes = search(query_embedding, 50)
+    similar_image_paths = [index_to_path[idx].split('static/')[1] for idx in indexes.flatten()]
+    return render_template('similar_images.html', images=similar_image_paths, weighted_rand=weighted_rand)
+
+
 def load_data(file_path):
     with open(file_path, 'rb') as f:
         index, np_embeddings, path_to_index, index_to_path = pickle.load(f)
     return index, np_embeddings, path_to_index, index_to_path
-faiss_index, np_embeddings, path_to_index, index_to_path = load_data('data.pkl')
+faiss_index, np_embeddings, path_to_index, index_to_path = load_data('data3.pkl')
 
 def find_images_in_folder(folder_path, image_extensions=('*.jpg', '*.jpeg', '*.png', '*.gif')):
     image_files = []
@@ -42,13 +51,16 @@ def search(embedding, k=5):
     embedding = np.array(embedding).astype('float32').reshape(1, -1)
     return faiss_index.search(embedding, k)
 
-def find_nearest_paths(input_path, k=100):    
+def find_nearest_paths(input_path, k=24):    
     # Get the embedding for the input path
     input_path = os.path.join(os.getcwd(), 'static/') + input_path
+    print(input_path)
     input_embedding = np_embeddings[path_to_index[input_path]]
+    print(input_embedding)
     # Perform the search
     distances, indexes = search(input_embedding, k)
     # Convert the indexes to paths
+    print(distances, indexes)
     nearest_paths = [index_to_path[idx] for idx in indexes.flatten()]
     return [p.split('static/')[1] for p in nearest_paths]
 
@@ -56,14 +68,6 @@ def embed_text(text):
     inputs = processor(text=text, return_tensors="pt", padding=True, truncation=True)
     with torch.no_grad():
         return clip_model.get_text_features(**inputs).numpy().tolist()
-
-@app.route('/search', methods=['GET'])
-def query_search():
-    query = request.args.get('query')
-    query_embedding = embed_text(query)
-    distances, indexes = ann_search(query_embedding, 50)
-    similar_image_paths = [index_to_path[idx].split('static/')[1] for idx in indexes.flatten()]
-    return render_template('similar_images.html', images=similar_image_paths, weighted_rand=weighted_rand)
 
 @app.route('/similar-images')
 def similar_images():
@@ -78,9 +82,33 @@ def nearest_images():
     nearest_image_paths = find_nearest_paths(input_path)
     return render_template('index.html', images=nearest_image_paths)
 
+def get_random_images(folder_path, num_images=5):
+    all_images = find_images_in_folder(folder_path)
+    # Ensure we do not sample more images than available
+    num_images = min(num_images, len(all_images))
+    random_images = np.random.choice(all_images, num_images, replace=False)
+    return [img.split('static/')[1] for img in random_images]
+
+def find_images_in_folder(folder_path, image_extensions=('*.jpg', '*.jpeg', '*.png', '*.gif')):
+    image_files = []
+    for root, _, files in os.walk(folder_path):
+        for ext in image_extensions:
+            for filename in fnmatch.filter(files, ext):
+                full_filepath = os.path.join(root, filename)
+                image_files.append(full_filepath)
+    return image_files
+
+# @app.route('/')
+# def index():
+#     return similar_images()
+
+
 @app.route('/')
 def index():
-    return similar_images()
+    random_image_paths = get_random_images(os.path.join(os.getcwd(), 'static/youtube'), num_images=20)
+    return render_template('similar_images.html', images=random_image_paths, weighted_rand=weighted_rand)
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)

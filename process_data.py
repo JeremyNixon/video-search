@@ -28,7 +28,7 @@ def find_images_in_folder(folder_path, image_extensions=('*.jpg', '*.jpeg', '*.p
     return image_files
 
 pwd = os.getcwd()
-relative_path = os.path.join(pwd, 'static/')
+relative_path = os.path.join(pwd, 'static/youtube')
 paths = find_images_in_folder(relative_path)
 
 def embed_image(image_path_or_paths):
@@ -61,7 +61,7 @@ def write_data():
         index_to_path[i] = p
         
     # Save the data to disk
-    with open('data2.pkl', 'wb') as f:
+    with open('data3.pkl', 'wb') as f:
         pickle.dump((index, np_embeddings, path_to_index, index_to_path), f)
 
 i = 0
