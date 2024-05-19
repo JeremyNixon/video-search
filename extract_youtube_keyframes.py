@@ -61,5 +61,9 @@ def download_keyframes(video_id, output_folder="keyframes", target_keyframes=60,
 
 
 # Example usage
-video_id = "1lCOgFPtaZ4"
-download_keyframes(video_id)
+if __name__ == "__main__":
+    if len(sys.argv) > 1:
+        video_id = sys.argv[1]
+    else:
+        video_id = "1lCOgFPtaZ4"
+    download_keyframes(video_id)
