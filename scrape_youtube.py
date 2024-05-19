@@ -18,14 +18,8 @@ def youtube_search(query):
     )
     response = request.execute()
 
-    print(len(response['items']))
-    from pprint import pprint
-    pprint(response)
-
-    # for item in response['items']:
-    #     print(f"Title: {item['snippet']['title']}")
-    #     print(f"Video ID: {item['id']['videoId']}\n")
-        # print(item['snippet']['description'])
+    video_ids = [item['id']['videoId'] for item in response['items']]
+    return video_ids
 
 
 if __name__ == "__main__":
