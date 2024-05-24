@@ -143,26 +143,76 @@
         }
 
         .search-container {
-            padding: 10px;
-            text-align: center;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
         }
 
-        .search-container input {
+        .search-box {
+            display: flex;
+            align-items: center;
+            background-color: #333;
+            border-radius: 25px;
+            padding: 5px 10px;
             width: 60%;
-            padding: 10px;
-            margin-right: 5px;
+            max-width: 600px;
         }
 
-        .search-container button {
+        .search-box input {
+            flex-grow: 1;
+            border: none;
+            background: none;
+            color: #ddd;
             padding: 10px;
+            border-radius: 25px;
+            outline: none;
+        }
+
+        .search-box button {
+            background-color: #555;
+            border: none;
+            color: #ddd;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .search-box button:hover {
+            background-color: #777;
+        }
+
+        .search-box input::placeholder {
+            color: #aaa;
+        }
+
+        @media (max-width: 768px) {
+            .search-box {
+                width: 80%;
+                /* Adjust width for smaller screens */
+            }
+        }
+
+        @media (max-width: 480px) {
+            .search-box {
+                width: 90%;
+                /* Adjust width for very small screens */
+            }
+
+            .search-box button {
+                padding: 10px;
+                /* Adjust button padding for very small screens */
+            }
         }
     </style>
 </head>
 
 <body>
-    <div>
-        <input type="text" id="search-input" placeholder="Search images...">
-        <button onclick="onSearch()">Search</button>
+    <div class="search-container">
+        <div class="search-box">
+            <input type="text" id="search-input" placeholder="Search for images...">
+            <button onclick="onSearch()">Search</button>
+        </div>
     </div>
     <div class="grid">
         {% for image in images %}
