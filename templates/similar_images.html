@@ -87,7 +87,7 @@
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
             gap: 0;
             /* Remove gaps between grid items */
             padding: 0;
@@ -97,18 +97,14 @@
         .card {
             display: flex;
             flex-direction: column;
-            /* Use flexbox to layout image and icons side by side */
-            /*  border: 2px solid #fff; */
-            /* Add a white border */
             box-sizing: border-box;
             width: 100%;
             height: 100%;
-            /* Adjust height as necessary */
+            padding-bottom: 20px;
         }
 
         .image-container {
             flex-grow: 1;
-            /* Takes up remaining space */
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -118,12 +114,16 @@
 
         .icons-container {
             display: flex;
-            flex-direction: row;
-            /* Stack icons vertically */
+            justify-content: center;
+            padding: 18px;
+        }
+
+        .pillbox {
+            display: flex;
             align-items: center;
-            /* Center icons horizontally */
-            padding: 10px;
-            /* Padding around icons */
+            background-color: #333;
+            border-radius: 25px;
+            padding: 8px 8px;
         }
 
         .icon {
@@ -131,8 +131,7 @@
             height: 24px;
             background-size: cover;
             cursor: pointer;
-            margin-bottom: 10px;
-            /* Space between icons */
+            margin: 0 15px;
         }
 
         .search-icon {
@@ -176,9 +175,10 @@
                 <!-- Image container -->
             </div>
             <div class="icons-container">
-                <!-- Icons in a vertical column -->
-                <div class="icon search-icon" onclick="someSearchFunction(event)"></div>
-                <div class="icon play-icon" onclick="somePlayFunction(event)"></div>
+                <div class="pillbox">
+                    <div class="icon search-icon" onclick="onImageClick('{{ image }}')"></div>
+                    <div class="icon play-icon" onclick="onImageRightClick(event, '{{ image }}')"></div>
+                </div>
             </div>
         </div>
 
