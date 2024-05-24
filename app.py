@@ -63,7 +63,12 @@ def query_search():
     distances, indexes = search(query_embedding, 100)
     similar_image_paths = [index_to_path[idx].split(
         'static/')[1] for idx in indexes.flatten()]
-    return render_template('similar_images.html', images=similar_image_paths, weighted_rand=weighted_rand)
+    return render_template(
+        'similar_images.html',
+        images=similar_image_paths,
+        path_to_image_id=path_to_image_id,
+        weighted_rand=weighted_rand
+    )
 
 
 def load_data(file_path):
