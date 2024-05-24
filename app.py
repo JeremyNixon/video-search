@@ -25,6 +25,37 @@ def weighted_rand(spec):
             return int(i)
 
 
+def find_images_in_folder(folder_path, image_extensions=('*.jpg', '*.jpeg', '*.png', '*.gif')):
+    image_files = []
+    for root, _, files in os.walk(folder_path):
+        for ext in image_extensions:
+            for filename in fnmatch.filter(files, ext):
+                full_filepath = os.path.join(root, filename)
+                image_files.append(full_filepath)
+    return image_files
+
+
+# Tidy ids so that the back button works
+
+image_id_to_path = {}
+path_to_image_id = {}
+
+
+def assign_ids_to_images():
+    global image_id_to_path, path_to_image_id
+    all_images = find_images_in_folder(
+        os.path.join(os.getcwd(), 'static/youtube'))
+    for idx, image_path in enumerate(all_images):
+        # Simple ID format, can be made more complex if needed
+        image_id = f"img{idx}"
+        relative_image_path = image_path.split('static/')[1]
+        image_id_to_path[image_id] = relative_image_path
+        path_to_image_id[relative_image_path] = image_id
+
+
+assign_ids_to_images()
+
+
 @app.route('/query-search', methods=['GET'])
 def query_search():
     query = request.args.get('query')
@@ -44,17 +75,6 @@ def load_data(file_path):
 faiss_index, np_embeddings, path_to_index, index_to_path = load_data(
     'data3.pkl')
 
-
-def find_images_in_folder(folder_path, image_extensions=('*.jpg', '*.jpeg', '*.png', '*.gif')):
-    image_files = []
-    for root, _, files in os.walk(folder_path):
-        for ext in image_extensions:
-            for filename in fnmatch.filter(files, ext):
-                full_filepath = os.path.join(
-                    root, filename).split('static/')[1]
-                image_files.append((full_filepath, filename))
-    return image_files
-
 # Define the search function to find the k nearest neighbors
 
 
@@ -67,6 +87,7 @@ def search(embedding, k=5):
 def find_nearest_paths(input_path, k=100):
     # Get the embedding for the input path
     input_path = os.path.join(os.getcwd(), 'static/') + input_path
+    # @TODO deprecate this substitution
     input_path = re.sub(r'video-search-[^/]+', 'video-search', input_path)
     print(input_path)
     input_embedding = np_embeddings[path_to_index[input_path]]
@@ -88,10 +109,16 @@ def embed_text(text):
 
 @app.route('/similar-images')
 def similar_images():
-    image_path = request.args.get('image_path')
-    print("Backend image path recieved:", image_path, flush=True)
+    image_id = request.args.get('image_id')
+    image_path = image_id_to_path.get(image_id)
+    print("Backend image path received:", image_path, flush=True)
     similar_image_paths = find_nearest_paths(image_path)
-    return render_template('similar_images.html', images=similar_image_paths, weighted_rand=weighted_rand)
+    return render_template(
+        'similar_images.html',
+        images=similar_image_paths,
+        path_to_image_id=path_to_image_id,
+        weighted_rand=weighted_rand
+    )
 
 
 @app.route('/nearest_images')
@@ -109,25 +136,16 @@ def get_random_images(folder_path, num_images=5):
     return [img.split('static/')[1] for img in random_images]
 
 
-def find_images_in_folder(folder_path, image_extensions=('*.jpg', '*.jpeg', '*.png', '*.gif')):
-    image_files = []
-    for root, _, files in os.walk(folder_path):
-        for ext in image_extensions:
-            for filename in fnmatch.filter(files, ext):
-                full_filepath = os.path.join(root, filename)
-                image_files.append(full_filepath)
-    return image_files
-
-# @app.route('/')
-# def index():
-#     return similar_images()
-
-
 @app.route('/')
 def index():
     random_image_paths = get_random_images(os.path.join(
         os.getcwd(), 'static/youtube'), num_images=100)
-    return render_template('similar_images.html', images=random_image_paths, weighted_rand=weighted_rand)
+    return render_template(
+        'similar_images.html',
+        images=random_image_paths,
+        path_to_image_id=path_to_image_id,
+        weighted_rand=weighted_rand
+    )
 
 
 if __name__ == '__main__':
