@@ -4,3 +4,6 @@ segment_*
 static/
 *.pyc
 tmp/
+*.pkl
+*.ipynb_checkpoints
+*.mp4
