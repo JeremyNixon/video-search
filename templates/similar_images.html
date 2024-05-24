@@ -10,6 +10,39 @@
             window.location.href = '/similar-images?image_id=' + encodeURIComponent(imageId);
         }
 
+
+        // Ensure a base state when the page loads
+        window.onload = function () {
+            if (!history.state) {
+                console.log("setting videoModalOpen to false in onload")
+                history.replaceState({ videoModalOpen: false }, null);
+            }
+        };
+
+        // Adjust the closeOverlay function to reset to a known state
+        function closeOverlay() {
+            const modal = document.querySelector('.modal');
+            const overlay = document.querySelector('.overlay');
+            if (modal && overlay) {
+                document.body.removeChild(modal);
+                document.body.removeChild(overlay);
+            }
+            // Reset the history state to indicate no modal is open
+            console.log("setting videoModalOpen to false in closeOverlay")
+            history.replaceState({ videoModalOpen: false }, null);
+        }
+
+        // Modify onpopstate to check for videoModalOpen more robustly
+        window.onpopstate = function (event) {
+            event.preventDefault();
+            console.log("back button pressed")
+            console.log(event)
+            if (event.state && event.state.videoModalOpen) {
+                console.log("back button pressed and modal is open, closing")
+                closeOverlay();
+            }
+        };
+
         function onImageRightClick(event, imagePath) {
             event.preventDefault();
 
@@ -31,8 +64,14 @@
                 videoIframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
                 videoIframe.allowFullscreen = true;
                 videoIframe.referrerPolicy = "strict-origin-when-cross-origin";
+                videoIframe.onload = function () {
+                    console.log("iframe onload event triggered");
+                    history.pushState({ modalOpen: true }, null);
+                    console.log("Current history state:", history.state);
+                };
 
                 const modal = document.createElement('div');
+                modal.className = 'modal';
                 modal.style.position = "fixed";
                 modal.style.top = "50%";
                 modal.style.left = "50%";
@@ -43,6 +82,7 @@
                 modal.appendChild(videoIframe);
 
                 const overlay = document.createElement('div');
+                overlay.className = 'overlay';
                 overlay.style.position = "fixed";
                 overlay.style.top = "0";
                 overlay.style.left = "0";
@@ -50,13 +90,15 @@
                 overlay.style.height = "100%";
                 overlay.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
                 overlay.style.zIndex = "999";
-                overlay.onclick = function () {
-                    document.body.removeChild(modal);
-                    document.body.removeChild(overlay);
-                };
+                overlay.onclick = closeOverlay;
 
                 document.body.appendChild(modal);
                 document.body.appendChild(overlay);
+
+                // Push a new state to the history stack
+                console.log("setting videoModalOpen to TRUE in onImageRightClick")
+                history.pushState({ videoModalOpen: true }, null);
+                console.log("Current history state:", history.state);
             }
         }
 
