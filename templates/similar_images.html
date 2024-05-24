@@ -6,13 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Search Engine</title>
     <script>
-        function onImageClick(imagePath) {
-            fetch('/similar-images?image_path=' + encodeURIComponent(imagePath))
-                .then(response => response.text())
-                .then(html => {
-                    document.body.innerHTML = html;
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                });
+        function onImageClick(imageId) {
+            window.location.href = '/similar-images?image_id=' + encodeURIComponent(imageId);
         }
 
         function onImageRightClick(event, imagePath) {
@@ -220,13 +215,14 @@
         {% set url = url_for('static', filename=image) %}
         {% set card_class = 'card span-' ~ span ~ ' c-1' %}
         <div class="{{ card_class }}">
-            <div class="image-container" style="background-image: url({{ url }});" onclick="onImageClick('{{ image }}')"
+            <div class="image-container" style="background-image: url('{{ url }}');"
+                onclick="onImageClick('{{ path_to_image_id[image] }}')"
                 oncontextmenu="onImageRightClick(event, '{{ image }}')">
                 <!-- Image container -->
             </div>
             <div class="icons-container">
                 <div class="pillbox">
-                    <div class="icon search-icon" onclick="onImageClick('{{ image }}')"></div>
+                    <div class="icon search-icon" onclick="onImageClick('{{ path_to_image_id[image] }}')"></div>
                     <div class="icon play-icon" onclick="onImageRightClick(event, '{{ image }}')"></div>
                 </div>
             </div>
