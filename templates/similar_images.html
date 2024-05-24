@@ -10,6 +10,7 @@
                 .then(response => response.text())
                 .then(html => {
                     document.body.innerHTML = html;
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                 });
         }
 
@@ -74,23 +75,39 @@
     </script>
     <style>
         html { background: black; }
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            color: #ddd;
+        }
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            grid-gap: 2px;
-            grid-auto-rows: minmax(160px, auto);
-            grid-auto-flow: dense;
+            gap: 0; /* Remove gaps between grid items */
+            padding: 0;
+            margin: 0;
         }
-
-        .c-1{ background: #000000; color: #ddd;}
-        .c-2{ background: #4ecdc4;}
-        .c-3{ background: #bfd7ea;}
-        .c-4{ background: #ff6b6b;}
-        .c-5{ background: #ffe66d;}
-
-        .card { min-height: 200px; background-size: contain; background-position: center; background-repeat: no-repeat;}
-        .span-2 { grid-column-end: span 2; grid-row-end: span 2; min-height: 400px; }
-        .span-3 { grid-column-end: span 3; grid-row-end: span 3; min-height: 800px; }
+        .card {
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            position: relative;
+            width: 100%;
+            padding-bottom: 75%; /* 4:3 aspect ratio */
+            margin: 0; /* Remove margin from grid items */
+        }
+        .search-container {
+            padding: 10px;
+            text-align: center;
+        }
+        .search-container input {
+            width: 60%;
+            padding: 10px;
+            margin-right: 5px;
+        }
+        .search-container button {
+            padding: 10px;
+        }
     </style>
 </head>
 <body>

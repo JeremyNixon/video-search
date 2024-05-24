@@ -25,7 +25,7 @@ def weighted_rand(spec):
 def query_search():
     query = request.args.get('query')
     query_embedding = embed_text(query)
-    distances, indexes = search(query_embedding, 50)
+    distances, indexes = search(query_embedding, 100)
     similar_image_paths = [index_to_path[idx].split('static/')[1] for idx in indexes.flatten()]
     return render_template('similar_images.html', images=similar_image_paths, weighted_rand=weighted_rand)
 
@@ -51,7 +51,7 @@ def search(embedding, k=5):
     embedding = np.array(embedding).astype('float32').reshape(1, -1)
     return faiss_index.search(embedding, k)
 
-def find_nearest_paths(input_path, k=24):    
+def find_nearest_paths(input_path, k=100):    
     # Get the embedding for the input path
     input_path = os.path.join(os.getcwd(), 'static/') + input_path
     print(input_path)
@@ -105,7 +105,7 @@ def find_images_in_folder(folder_path, image_extensions=('*.jpg', '*.jpeg', '*.p
 
 @app.route('/')
 def index():
-    random_image_paths = get_random_images(os.path.join(os.getcwd(), 'static/youtube'), num_images=20)
+    random_image_paths = get_random_images(os.path.join(os.getcwd(), 'static/youtube'), num_images=100)
     return render_template('similar_images.html', images=random_image_paths, weighted_rand=weighted_rand)
 
 
