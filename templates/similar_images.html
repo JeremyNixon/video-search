@@ -1,17 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Search Engine</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.0/color-thief.umd.js"></script>
     <script>
-        function onImageClick(imagePath) {
-            fetch('/similar-images?image_path=' + encodeURIComponent(imagePath))
-                .then(response => response.text())
-                .then(html => {
-                    document.body.innerHTML = html;
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                });
+        function updateBackgroundGradient() {
+            const colorThief = new ColorThief();
+            const images = document.querySelectorAll('.image-extractor');
+            let colors = [];
+            let maxImages = 5; // Limit to the first 5 images
+
+            images.forEach((img, index) => {
+                console.log("fetching color for image", index, img.src)
+                if (index < maxImages && img.complete && img.naturalHeight !== 0) {
+                    try {
+                        const dominantColor = colorThief.getColor(img);
+                        colors.push(`rgb(${dominantColor.join(',')})`);
+                    } catch (error) {
+                        console.error("Error extracting color:", error);
+                    }
+                }
+            });
+
+            if (colors.length > 1) {
+                const gradientDirection = window.innerWidth > 768 ? 'to right' : 'to bottom';
+                document.body.style.background = `linear-gradient(${gradientDirection}, ${colors.join(', ')})`;
+            } else if (colors.length === 1) {
+                document.body.style.background = colors[0];
+            }
+        }
+        // Ensure a base state when the page loads
+        window.onload = function () {
+            if (!history.state) {
+                history.replaceState({ videoModalOpen: false }, null);
+            }
+            updateBackgroundGradient();
+        };
+
+        // Adjust the closeOverlay function to reset to a known state
+        function closeOverlay() {
+            const modal = document.querySelector('.modal');
+            const overlay = document.querySelector('.overlay');
+            if (modal && overlay) {
+                document.body.removeChild(modal);
+                document.body.removeChild(overlay);
+            }
+            // Reset the history state to indicate no modal is open
+            history.replaceState({ videoModalOpen: false }, null);
+        }
+
+        // Modify onpopstate to check for videoModalOpen more robustly
+        window.onpopstate = function (event) {
+            event.preventDefault();
+            if (event.state && event.state.videoModalOpen) {
+                closeOverlay();
+            }
+        };
+
+        function onImageClick(imageId) {
+            window.location.href = '/similar-images?image_id=' + encodeURIComponent(imageId);
         }
 
         function onImageRightClick(event, imagePath) {
@@ -35,8 +86,12 @@
                 videoIframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
                 videoIframe.allowFullscreen = true;
                 videoIframe.referrerPolicy = "strict-origin-when-cross-origin";
+                videoIframe.onload = function () {
+                    history.pushState({ modalOpen: true }, null);
+                };
 
                 const modal = document.createElement('div');
+                modal.className = 'modal';
                 modal.style.position = "fixed";
                 modal.style.top = "50%";
                 modal.style.left = "50%";
@@ -47,6 +102,7 @@
                 modal.appendChild(videoIframe);
 
                 const overlay = document.createElement('div');
+                overlay.className = 'overlay';
                 overlay.style.position = "fixed";
                 overlay.style.top = "0";
                 overlay.style.left = "0";
@@ -54,77 +110,221 @@
                 overlay.style.height = "100%";
                 overlay.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
                 overlay.style.zIndex = "999";
-                overlay.onclick = function() {
-                    document.body.removeChild(modal);
-                    document.body.removeChild(overlay);
-                };
+                overlay.onclick = closeOverlay;
 
                 document.body.appendChild(modal);
                 document.body.appendChild(overlay);
+
+                // Push a new state to the history stack
+                console.log("setting videoModalOpen to TRUE in onImageRightClick")
+                history.pushState({ videoModalOpen: true }, null);
+                console.log("Current history state:", history.state);
             }
         }
 
         function onSearch() {
             const query = document.getElementById('search-input').value;
-            fetch('/query-search?query=' + encodeURIComponent(query))
-                .then(response => response.text())
-                .then(html => {
-                    document.body.innerHTML = html;
-                });
+            window.location.href = '/query-search?query=' + encodeURIComponent(query);
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === "Enter") {
+                onSearch();
+            }
         }
     </script>
     <style>
-        html { background: black; }
+        html {
+            background: linear-gradient(120deg, #444 20%, #888 40%, #444 60%);
+            background-size: 200% 100%;
+            animation: ColorBlocks 20s ease infinite;
+        }
+
+        @keyframes ColorBlocks {
+
+            0%,
+            100% {
+                background-position: 100% 0;
+            }
+
+            50% {
+                background-position: 0 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            html {
+                animation: ColorBlocks 30s ease infinite;
+            }
+        }
+
         body {
             margin: 0;
             font-family: Arial, sans-serif;
             color: #ddd;
+            transition: background 0.5s ease;
+            /* Smooth transition to new background */
         }
+
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 0; /* Remove gaps between grid items */
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 0;
+            /* Remove gaps between grid items */
             padding: 0;
             margin: 0;
         }
+
         .card {
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            width: 100%;
+            height: 100%;
+            padding-bottom: 20px;
+        }
+
+        .image-container {
+            flex-grow: 1;
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            position: relative;
-            width: 100%;
-            padding-bottom: 75%; /* 4:3 aspect ratio */
-            margin: 0; /* Remove margin from grid items */
+            padding-bottom: 75%;
+            /* Maintain aspect ratio */
         }
+
+        .icons-container {
+            display: flex;
+            justify-content: center;
+            padding: 18px;
+        }
+
+        .pillbox {
+            display: flex;
+            align-items: center;
+            background-color: #333;
+            border-radius: 25px;
+            padding: 8px 8px;
+        }
+
+        .icon {
+            width: 24px;
+            height: 24px;
+            background-size: cover;
+            cursor: pointer;
+            margin: 0 15px;
+        }
+
+        .search-globe-icon {
+            background-image: url('static/images/search-globe-svgrepo-com.svg');
+        }
+
+        .search-icon {
+            background-image: url('static/images/search-svgrepo-com.svg');
+        }
+
+        .play-icon {
+            background-image: url('static/images/play-button-svgrepo-com.svg');
+        }
+
         .search-container {
-            padding: 10px;
-            text-align: center;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
         }
-        .search-container input {
-            width: 60%;
-            padding: 10px;
-            margin-right: 5px;
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background-color: #333;
+            border-radius: 25px;
+            padding: 5px 10px;
+            width: 50%;
+            max-width: 400px;
         }
-        .search-container button {
+
+        .search-box input {
+            flex-grow: 1;
+            border: none;
+            background: none;
+            color: #ddd;
             padding: 10px;
+            border-radius: 25px;
+            outline: none;
+        }
+
+        .search-box button {
+            background-color: #555;
+            border: none;
+            color: #ddd;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .search-box button:hover {
+            background-color: #777;
+        }
+
+        .search-box input::placeholder {
+            color: #aaa;
+        }
+
+        @media (max-width: 768px) {
+            .search-box {
+                width: 70%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .search-box {
+                width: 80%;
+            }
+
+            .search-box button {
+                padding: 10px;
+            }
+        }
+
+        @media (max-width: 392px) {
+            .search-box {
+                min-width: 300px;
+            }
         }
     </style>
 </head>
+
 <body>
-    <div>
-        <input type="text" id="search-input" placeholder="Search images...">
-        <button onclick="onSearch()">Search</button>
+    <div class="search-container">
+        <div class="search-box">
+            <div class="icon search-icon"></div>
+            <input type="text" id="search-input" placeholder="Search for images..." onkeypress="handleKeyPress(event)">
+            <button onclick="onSearch()">Search</button>
+        </div>
     </div>
     <div class="grid">
         {% for image in images %}
-            {% set span = weighted_rand({1:0.7, 2:0.2, 3:0.1}) %}
-            {% set url = url_for('static', filename=image) %}
-            {% set card_class = 'card span-' ~ span ~ ' c-1' %}
-            <div style="background-image: url({{ url }})" class="{{ card_class }}"
-                 onclick="onImageClick('{{ image }}')"
-                 oncontextmenu="onImageRightClick(event, '{{ image }}')">
+        {% set span = weighted_rand({1:0.7, 2:0.2, 3:0.1}) %}
+        {% set url = url_for('static', filename=image) %}
+        {% set card_class = 'card span-' ~ span ~ ' c-1' %}
+        <div class="{{ card_class }}">
+            <img src="{{ url }}" class="image-extractor" style="display: none;" alt="Image for color extraction">
+            <div class="image-container" style="background-image: url('{{ url }}');"
+                onclick="onImageClick('{{ path_to_image_id[image] }}')"
+                oncontextmenu="onImageRightClick(event, '{{ image }}')">
+                <!-- Image container -->
             </div>
+            <div class="icons-container">
+                <div class="pillbox">
+                    <div class="icon search-globe-icon" onclick="onImageClick('{{ path_to_image_id[image] }}')"></div>
+                    <div class="icon play-icon" onclick="onImageRightClick(event, '{{ image }}')"></div>
+                </div>
+            </div>
+        </div>
+
         {% endfor %}
     </div>
 </body>
+
 </html>
