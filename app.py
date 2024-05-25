@@ -154,4 +154,6 @@ def index():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    host = os.getenv('FLASK_RUN_HOST', '127.0.0.1')
+    port = int(os.getenv('FLASK_RUN_PORT', 8000))
+    app.run(debug=True, host=host, port=port)
