@@ -26,7 +26,8 @@
             });
 
             if (colors.length > 1) {
-                document.body.style.background = `linear-gradient(to right, ${colors.join(', ')})`;
+                const gradientDirection = window.innerWidth > 768 ? 'to right' : 'to bottom';
+                document.body.style.background = `linear-gradient(${gradientDirection}, ${colors.join(', ')})`;
             } else if (colors.length === 1) {
                 document.body.style.background = colors[0];
             }
@@ -133,13 +134,35 @@
     </script>
     <style>
         html {
-            background: black;
+            background: linear-gradient(120deg, #444 20%, #888 40%, #444 60%);
+            background-size: 200% 100%;
+            animation: ColorBlocks 20s ease infinite;
+        }
+
+        @keyframes ColorBlocks {
+
+            0%,
+            100% {
+                background-position: 100% 0;
+            }
+
+            50% {
+                background-position: 0 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            html {
+                animation: ColorBlocks 30s ease infinite;
+            }
         }
 
         body {
             margin: 0;
             font-family: Arial, sans-serif;
             color: #ddd;
+            transition: background 0.5s ease;
+            /* Smooth transition to new background */
         }
 
         .grid {
