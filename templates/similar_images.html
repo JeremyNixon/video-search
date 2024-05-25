@@ -5,18 +5,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Search Engine</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.0/color-thief.umd.js"></script>
     <script>
-        function onImageClick(imageId) {
-            window.location.href = '/similar-images?image_id=' + encodeURIComponent(imageId);
+        function updateBackgroundGradient() {
+            const colorThief = new ColorThief();
+            const images = document.querySelectorAll('.image-extractor');
+            let colors = [];
+            let maxImages = 5; // Limit to the first 5 images
+
+            images.forEach((img, index) => {
+                console.log("fetching color for image", index, img.src)
+                if (index < maxImages && img.complete && img.naturalHeight !== 0) {
+                    try {
+                        const dominantColor = colorThief.getColor(img);
+                        colors.push(`rgb(${dominantColor.join(',')})`);
+                    } catch (error) {
+                        console.error("Error extracting color:", error);
+                    }
+                }
+            });
+
+            if (colors.length > 1) {
+                document.body.style.background = `linear-gradient(to right, ${colors.join(', ')})`;
+            } else if (colors.length === 1) {
+                document.body.style.background = colors[0];
+            }
         }
-
-
         // Ensure a base state when the page loads
         window.onload = function () {
             if (!history.state) {
-                console.log("setting videoModalOpen to false in onload")
                 history.replaceState({ videoModalOpen: false }, null);
             }
+            updateBackgroundGradient();
         };
 
         // Adjust the closeOverlay function to reset to a known state
@@ -28,20 +48,20 @@
                 document.body.removeChild(overlay);
             }
             // Reset the history state to indicate no modal is open
-            console.log("setting videoModalOpen to false in closeOverlay")
             history.replaceState({ videoModalOpen: false }, null);
         }
 
         // Modify onpopstate to check for videoModalOpen more robustly
         window.onpopstate = function (event) {
             event.preventDefault();
-            console.log("back button pressed")
-            console.log(event)
             if (event.state && event.state.videoModalOpen) {
-                console.log("back button pressed and modal is open, closing")
                 closeOverlay();
             }
         };
+
+        function onImageClick(imageId) {
+            window.location.href = '/similar-images?image_id=' + encodeURIComponent(imageId);
+        }
 
         function onImageRightClick(event, imagePath) {
             event.preventDefault();
@@ -65,9 +85,7 @@
                 videoIframe.allowFullscreen = true;
                 videoIframe.referrerPolicy = "strict-origin-when-cross-origin";
                 videoIframe.onload = function () {
-                    console.log("iframe onload event triggered");
                     history.pushState({ modalOpen: true }, null);
-                    console.log("Current history state:", history.state);
                 };
 
                 const modal = document.createElement('div');
@@ -259,6 +277,7 @@
         {% set url = url_for('static', filename=image) %}
         {% set card_class = 'card span-' ~ span ~ ' c-1' %}
         <div class="{{ card_class }}">
+            <img src="{{ url }}" class="image-extractor" style="display: none;" alt="Image for color extraction">
             <div class="image-container" style="background-image: url('{{ url }}');"
                 onclick="onImageClick('{{ path_to_image_id[image] }}')"
                 oncontextmenu="onImageRightClick(event, '{{ image }}')">
