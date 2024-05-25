@@ -214,8 +214,12 @@
             margin: 0 15px;
         }
 
-        .search-icon {
+        .search-globe-icon {
             background-image: url('static/images/search-globe-svgrepo-com.svg');
+        }
+
+        .search-icon {
+            background-image: url('static/images/search-svgrepo-com.svg');
         }
 
         .play-icon {
@@ -234,8 +238,8 @@
             background-color: #333;
             border-radius: 25px;
             padding: 5px 10px;
-            width: 60%;
-            max-width: 600px;
+            width: 50%;
+            max-width: 400px;
         }
 
         .search-box input {
@@ -268,20 +272,23 @@
 
         @media (max-width: 768px) {
             .search-box {
-                width: 80%;
-                /* Adjust width for smaller screens */
+                width: 70%;
             }
         }
 
         @media (max-width: 480px) {
             .search-box {
-                width: 90%;
-                /* Adjust width for very small screens */
+                width: 80%;
             }
 
             .search-box button {
                 padding: 10px;
-                /* Adjust button padding for very small screens */
+            }
+        }
+
+        @media (max-width: 392px) {
+            .search-box {
+                min-width: 300px;
             }
         }
     </style>
@@ -290,6 +297,7 @@
 <body>
     <div class="search-container">
         <div class="search-box">
+            <div class="icon search-icon"></div>
             <input type="text" id="search-input" placeholder="Search for images..." onkeypress="handleKeyPress(event)">
             <button onclick="onSearch()">Search</button>
         </div>
@@ -308,7 +316,7 @@
             </div>
             <div class="icons-container">
                 <div class="pillbox">
-                    <div class="icon search-icon" onclick="onImageClick('{{ path_to_image_id[image] }}')"></div>
+                    <div class="icon search-globe-icon" onclick="onImageClick('{{ path_to_image_id[image] }}')"></div>
                     <div class="icon play-icon" onclick="onImageRightClick(event, '{{ image }}')"></div>
                 </div>
             </div>
