@@ -8,6 +8,7 @@ import os
 import torch
 import faiss
 import pickle
+import json
 import random
 from transformers import CLIPProcessor, CLIPModel
 
@@ -61,8 +62,11 @@ def query_search():
     query = request.args.get('query')
     query_embedding = embed_text(query)
     distances, indexes = search(query_embedding, 100)
-    similar_image_paths = [index_to_path[idx].split(
-        'static/')[1] for idx in indexes.flatten()]
+    similar_image_paths = []
+    for idx in indexes.flatten():
+        if index_to_path[idx].split('static/')[1] not in blacklist:
+            similar_image_paths.append(index_to_path[idx].split(
+            'static/')[1])
     return render_template(
         'similar_images.html',
         images=similar_image_paths,
@@ -74,11 +78,13 @@ def query_search():
 def load_data(file_path):
     with open(file_path, 'rb') as f:
         index, np_embeddings, path_to_index, index_to_path = pickle.load(f)
-    return index, np_embeddings, path_to_index, index_to_path
+    with open('blacklist.json', 'r') as file:
+        blacklist = json.load(file)    
+    return index, np_embeddings, path_to_index, index_to_path, blacklist
 
 
-faiss_index, np_embeddings, path_to_index, index_to_path = load_data(
-    'data3.pkl')
+faiss_index, np_embeddings, path_to_index, index_to_path, blacklist = load_data(
+    'data4.pkl')
 
 # Define the search function to find the k nearest neighbors
 

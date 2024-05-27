@@ -61,7 +61,7 @@ def write_data():
         index_to_path[i] = p
         
     # Save the data to disk
-    with open('data3.pkl', 'wb') as f:
+    with open('data4.pkl', 'wb') as f:
         pickle.dump((index, np_embeddings, path_to_index, index_to_path), f)
 
 i = 0
