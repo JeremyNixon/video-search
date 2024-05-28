@@ -98,7 +98,7 @@ def search(embedding, k=5):
 def find_nearest_paths(input_path, k=100):
     # Get the embedding for the input path
     input_path = os.path.join(os.getcwd(), 'static/') + input_path
-    # @TODO deprecate this substitution
+    # substitution for dev copies
     input_path = re.sub(r'video-search-[^/]+', 'video-search', input_path)
     print(input_path)
     input_embedding = np_embeddings[path_to_index[input_path]]

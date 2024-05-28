@@ -7,6 +7,8 @@
     <title>Video Search Engine</title>
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.0/color-thief.umd.js"></script>
+    <script src="https://unpkg.com/masonry-layout@4/dist/masonry.pkgd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js"></script>
     <script>
         function updateBackgroundGradient() {
             const colorThief = new ColorThief();
@@ -163,34 +165,73 @@
             font-family: Arial, sans-serif;
             color: #ddd;
             transition: background 0.5s ease;
-            /* Smooth transition to new background */
         }
+
 
         .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-            gap: 0;
-            /* Remove gaps between grid items */
+            width: 100%;
             padding: 0;
-            margin: 0;
+            margin: 0 auto;
         }
 
-        .card {
-            display: flex;
-            flex-direction: column;
-            box-sizing: border-box;
-            width: 100%;
-            height: 100%;
-            padding-bottom: 20px;
+        .grid-sizer,
+        .grid-item {
+            width: calc(20%);
+            /* 5 columns */
+        }
+
+        .special-size {
+            width: calc(40%);
+            /* 2 columns */
+        }
+
+        @media (min-width: 768px) {
+
+            .grid-sizer,
+            .grid-item {
+                width: calc(20%);
+                /* 5 columns */
+            }
+
+            .special-size {
+                width: calc(40%);
+                /* 2 columns */
+            }
+        }
+
+        @media (min-width: 1024px) {
+
+            .grid-sizer,
+            .grid-item {
+                width: calc(20%);
+                /* 5 columns */
+            }
+
+            .special-size {
+                width: calc(40%);
+                /* 2 columns */
+            }
+        }
+
+        @media (min-width: 1440px) {
+
+            .grid-sizer,
+            .grid-item {
+                width: calc(12.5%);
+                /* 10 columns */
+            }
+
+            .special-size {
+                width: calc(25%);
+                /* 2 columns */
+            }
         }
 
         .image-container {
-            flex-grow: 1;
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
             padding-bottom: 75%;
-            /* Maintain aspect ratio */
         }
 
         .icons-container {
@@ -203,7 +244,7 @@
             display: flex;
             align-items: center;
             background-color: #333;
-            border-radius: 25px;
+            border-radius: 20px;
             padding: 8px 8px;
         }
 
@@ -237,7 +278,7 @@
             display: flex;
             align-items: center;
             background-color: #333;
-            border-radius: 25px;
+            border-radius: 20px;
             padding: 5px 10px;
             width: 50%;
             max-width: 400px;
@@ -249,7 +290,7 @@
             background: none;
             color: #ddd;
             padding: 10px;
-            border-radius: 25px;
+            border-radius: 20px;
             outline: none;
         }
 
@@ -258,7 +299,7 @@
             border: none;
             color: #ddd;
             padding: 10px 20px;
-            border-radius: 25px;
+            border-radius: 20px;
             cursor: pointer;
             margin-left: 10px;
         }
@@ -303,12 +344,13 @@
             <button onclick="onSearch()">Search</button>
         </div>
     </div>
+
     <div class="grid">
+        <div class="grid-sizer"></div> <!-- Invisible element just for sizing -->
         {% for image in images %}
-        {% set span = weighted_rand({1:0.7, 2:0.2, 3:0.1}) %}
         {% set url = url_for('static', filename=image) %}
-        {% set card_class = 'card span-' ~ span ~ ' c-1' %}
-        <div class="{{ card_class }}">
+        {% set special_class = 'special-size' if 'similar-images' in request.path and loop.first else '' %}
+        <div class="{{ special_class }} grid-item card">
             <img src="{{ url }}" class="image-extractor" style="display: none;" alt="Image for color extraction">
             <div class="image-container" style="background-image: url('{{ url }}');"
                 onclick="onImageClick('{{ path_to_image_id[image] }}')"
@@ -317,14 +359,30 @@
             </div>
             <div class="icons-container">
                 <div class="pillbox">
-                    <div class="icon search-globe-icon" onclick="onImageClick('{{ path_to_image_id[image] }}')"></div>
+                    <div class="icon search-globe-icon" onclick="onImageClick('{{ path_to_image_id[image] }}')">
+                    </div>
                     <div class="icon play-icon" onclick="onImageRightClick(event, '{{ image }}')"></div>
                 </div>
             </div>
         </div>
-
         {% endfor %}
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var grid = document.querySelector('.grid');
+            var msnry = new Masonry(grid, {
+                itemSelector: '.grid-item',
+                columnWidth: '.grid-sizer', // Reference element for column width
+                percentPosition: true
+            });
+
+            // Ensure images are loaded before laying out Masonry
+            imagesLoaded(grid, function () {
+                msnry.layout();
+            });
+        });
+    </script>
 </body>
 
 </html>
