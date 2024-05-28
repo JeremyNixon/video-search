@@ -167,23 +167,21 @@
             transition: background 0.5s ease;
         }
 
+
         .grid {
             width: 100%;
+            padding: 0;
             margin: 0 auto;
         }
 
-        .grid-sizer {
-            width: calc(33.333% - 10px);
-            /* Default to 3 columns */
-        }
-
+        .grid-sizer,
         .grid-item {
-            width: calc(33.333% - 10px);
-            /* Default to 3 columns */
+            width: calc(20%);
+            /* 5 columns */
         }
 
         .special-size {
-            width: calc(66.666% - 25px);
+            width: calc(40%);
             /* 2 columns */
         }
 
@@ -191,12 +189,12 @@
 
             .grid-sizer,
             .grid-item {
-                width: calc(33.333% - 10px);
-                /* 3 columns */
+                width: calc(20%);
+                /* 5 columns */
             }
 
             .special-size {
-                width: calc(66.666% - 25px);
+                width: calc(40%);
                 /* 2 columns */
             }
         }
@@ -205,12 +203,12 @@
 
             .grid-sizer,
             .grid-item {
-                width: calc(25% - 10px);
-                /* 4 columns */
+                width: calc(20%);
+                /* 5 columns */
             }
 
             .special-size {
-                width: calc(50% - 25px);
+                width: calc(40%);
                 /* 2 columns */
             }
         }
@@ -219,12 +217,12 @@
 
             .grid-sizer,
             .grid-item {
-                width: calc(20% - 10px);
-                /* 5 columns */
+                width: calc(12.5%);
+                /* 10 columns */
             }
 
             .special-size {
-                width: calc(40% - 25px);
+                width: calc(25%);
                 /* 2 columns */
             }
         }
@@ -246,7 +244,7 @@
             display: flex;
             align-items: center;
             background-color: #333;
-            border-radius: 25px;
+            border-radius: 20px;
             padding: 8px 8px;
         }
 
@@ -280,7 +278,7 @@
             display: flex;
             align-items: center;
             background-color: #333;
-            border-radius: 25px;
+            border-radius: 20px;
             padding: 5px 10px;
             width: 50%;
             max-width: 400px;
@@ -292,7 +290,7 @@
             background: none;
             color: #ddd;
             padding: 10px;
-            border-radius: 25px;
+            border-radius: 20px;
             outline: none;
         }
 
@@ -301,7 +299,7 @@
             border: none;
             color: #ddd;
             padding: 10px 20px;
-            border-radius: 25px;
+            border-radius: 20px;
             cursor: pointer;
             margin-left: 10px;
         }
@@ -346,6 +344,7 @@
             <button onclick="onSearch()">Search</button>
         </div>
     </div>
+
     <div class="grid">
         <div class="grid-sizer"></div> <!-- Invisible element just for sizing -->
         {% for image in images %}
@@ -360,13 +359,15 @@
             </div>
             <div class="icons-container">
                 <div class="pillbox">
-                    <div class="icon search-globe-icon" onclick="onImageClick('{{ path_to_image_id[image] }}')"></div>
+                    <div class="icon search-globe-icon" onclick="onImageClick('{{ path_to_image_id[image] }}')">
+                    </div>
                     <div class="icon play-icon" onclick="onImageRightClick(event, '{{ image }}')"></div>
                 </div>
             </div>
         </div>
         {% endfor %}
     </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             var grid = document.querySelector('.grid');
@@ -383,6 +384,10 @@
         });
     </script>
 </body>
+
+</html>
+
+</html>
 
 </html>
 
